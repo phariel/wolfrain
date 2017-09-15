@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>狼雨</title>
+  <link rel='stylesheet' href='/_styles/style.css' />
+</head>
+
+<body>
+  <div class="seat"></div>
+  <div class="func none"></div>
+</body>
+<script src="/_scripts/require.js"></script>
+<script>
+  requirejs.config({
+    baseUrl: '_scripts',
+    paths: {
+      jquery: 'jquery.min',
+      bootstrap: 'bootstrap.min'
+    },
+    shim: {
+      'bootstrap': {
+        deps: ['jquery']
+      }
+    }
+  });
+
+</script>
+<script src="_scripts/main.js"></script>
+
+</html>
