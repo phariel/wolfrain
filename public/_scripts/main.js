@@ -8,13 +8,19 @@ require(['jquery', 'bootstrap'], function ($, bs) {
     var elRoomCreateGroup = elRoomCreate.find('.btn-group');
     var elRoomEnter = elRoom.find('.room-enter');
     var btnCreate = elRoom.find('.btn-create');
+    var elInputEnter = elRoom.find('.enter-number');
     var btnEnter = elRoom.find('.btn-enter');
     var elResultCreate = elRoom.find('.result-create');
     var typeButton = '<button class="btn btn-type-create"></button>';
     var seatButton = '<button class="btn btn-seat"></button>';
     var elRoomTitle = elSeats.find('.room-title-number');
+    var elSeatTitle = elSeats.find('.seat-title-number');
+    var elAlert = $('#alert-dialog');
+    var elAlertBody = elAlert.find('.modal-body');
 
     var elSit = $('.btn-sit');
+    var btnRole = $('.btn-role');
+    var btnStart = $('.btn-start');
 
     var createType;
     var seat = 0;
@@ -30,6 +36,20 @@ require(['jquery', 'bootstrap'], function ($, bs) {
 
     function initSeat() {
         var roomNumber = getStorage('room');
+        var admin = getStorage('admin');
+        var seat = getStorage('seat');
+        if (seat) {
+            seat = JSON.parse(seat);
+            if (seat[roomNumber]) {
+                elSeatTitle.text(seat[roomNumber]);
+                btnRole.removeClass('none');
+            }
+        }
+
+        if (admin === roomNumber) {
+            btnStart.removeClass('none');
+        }
+
         elRoomTitle.text(roomNumber);
         if (roomNumber) {
             $.ajax({
@@ -54,6 +74,7 @@ require(['jquery', 'bootstrap'], function ($, bs) {
 
     function getStartStatus() {
         var room = getStorage('room');
+        var admin = getStorage('admin');
         var elSeatItems = elSeats.find('.btn-seat');
         $.ajax({
             url: '/startstatus',
@@ -63,11 +84,16 @@ require(['jquery', 'bootstrap'], function ($, bs) {
             },
             success: function (data) {
                 if (data.seats) {
-                    data.seats.forEach(function (seatReady, i) {
-                        if (seatReady) {
-                            elSeatItems.eq(i).addClass('btn-success');
+                    data.seats.forEach(function (seatSit, i) {
+                        if (data.ready[i]) {
+                            elSeatItems.eq(i).addClass('btn-success').removeClass('btn-info');
+                        } else if (seatSit) {
+                            elSeatItems.eq(i).addClass('btn-info');
                         }
                     });
+                }
+                if (room === admin) {
+                    btnStart.toggleClass('none', data.started);
                 }
             }
         });
@@ -126,6 +152,7 @@ require(['jquery', 'bootstrap'], function ($, bs) {
 
         if (seat > 0) {
             elSit.addClass('none');
+
             return;
         }
         var el = $(this);
@@ -160,11 +187,76 @@ require(['jquery', 'bootstrap'], function ($, bs) {
                         elSit.addClass('none');
                         seatCache[room] = seat;
                         setStorage('seat', JSON.stringify(seatCache));
+                        elSeatTitle.text(seat);
+                        btnRole.removeClass('none');
                     } else {
-
+                        elAlertBody.text('坐下失败，是否坐错？');
+                        elAlert.modal('show');
                     }
                 }
             });
         }
+    });
+
+    btnRoomEnter.on('click', function () {
+        elRoomBtn.addClass('none');
+        elRoomEnter.removeClass('none');
+    });
+
+    btnEnter.on('click', function () {
+        var roomNumber = elInputEnter.val();
+        $.ajax({
+            url: '/roomTotal',
+            method: 'POST',
+            data: {
+                roomNumber: roomNumber
+            },
+            success: function (data) {
+                if (data && data.roomTotal > 0) {
+                    setStorage('room', roomNumber);
+                    initSeat();
+                } else {
+                    elAlertBody.text("没有这个房间！");
+                    elAlert.modal('show');
+                }
+            }
+        });
+    });
+    btnRole.on('click', function () {
+        var room = getStorage('room');
+        var seat = getStorage('seat');
+        if (seat) {
+            seat = JSON.parse(seat);
+            seat = seat[room];
+        }
+        $.ajax({
+            url: '/getSelfRole',
+            method: 'POST',
+            data: {
+                roomNumber: room,
+                seatNumber: seat
+            },
+            success: function (data) {
+                elAlertBody.text('你的身份：' + data.name);
+                elAlert.modal('show');
+            }
+        });
+    });
+    btnStart.on('click', function () {
+        var room = getStorage('room');
+
+        $.ajax({
+            url: '/gameStart',
+            method: 'POST',
+            data: {
+                roomNumber: room
+            },
+            success: function (data) {
+                if (!data.started) {
+                    elAlertBody.text('还有人没有看身份');
+                    elAlert.modal('show');
+                }
+            }
+        });
     });
 });

@@ -26,7 +26,7 @@ router.post('/roomTotal', function (req, res, next) {
     });
 });
 
-router.post('/sitdown', function (req, res) {
+router.post('/sitDown', function (req, res) {
     var roomNumber = req.param('roomNumber');
     var seatNumber = req.param('seatNumber');
     res.json({
@@ -34,8 +34,19 @@ router.post('/sitdown', function (req, res) {
     });
 });
 
-router.post('/startstatus', function (req, res) {
+router.post('/startStatus', function (req, res) {
     res.json(core.getStartStatus(req.param('roomNumber')));
+});
+
+router.post('/getSelfRole', function (req, res) {
+    var roomNumber = req.param('roomNumber');
+    var seatNumber = req.param('seatNumber');
+    res.json(core.getRole(roomNumber, seatNumber));
+});
+
+router.post('/gameStart', function (req, res) {
+    var roomNumber = req.param('roomNumber');
+    res.json(core.gameStart(roomNumber));
 });
 
 module.exports = router;

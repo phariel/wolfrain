@@ -20,21 +20,45 @@
         <div class="result-create"></div>
     </div>
     <div class="room-enter none">
-        <input class="enter-number"/>
+        <input class="enter-number form-control" type="number" min="1"/>
         <button class="btn btn-primary btn-enter">进入</button>
     </div>
 </div>
 <div class="seats none">
-    <h1 class="room-title">房间号：<span class="room-title-number"></span></h1>
+    <h1 class="room-title">房间号：<span class="room-title-number"></span> 座位号：<span class="seat-title-number"></span></h1>
 </div>
 
-<div class="function">
-    <button class="btn btn-danger btn-sit none">坐下</button>
+<div class="function-area">
+    <button class="btn btn-danger btn-info none">坐下</button>
     <button class="btn btn-success btn-role none">查看身份</button>
     <button class="btn btn-success btn-skill none">使用技能</button>
     <button class="btn btn-danger btn-start none">游戏开始</button>
     <button class="btn btn-danger btn-night none">查看昨夜</button>
     <button class="btn btn-danger btn-all none">查看所有</button>
+</div>
+<div class="modal" id="alert-dialog" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-body"></div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">知道了</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="audio-area">
+    <audio id="audio-enter-night" src="/_audios/enter-night.m4a"></audio>
+    <audio id="audio-enter-day" src="/_audios/enter-day.m4a"></audio>
+    <audio id="audio-wolf-start" src="/_audios/wolf-start.m4a"></audio>
+    <audio id="audio-wolf-end" src="/_audios/wolf-end.m4a"></audio>
+    <audio id="audio-witch-start" src="/_audios/witch-start.m4a"></audio>
+    <audio id="audio-witch-end" src="/_audios/witch-end.m4a"></audio>
+    <audio id="audio-seer-start" src="/_audios/seer-start.m4a"></audio>
+    <audio id="audio-seer-end" src="/_audios/seer-end.m4a"></audio>
+    <audio id="audio-guard-start" src="/_audios/guard-start.m4a"></audio>
+    <audio id="audio-guard-end" src="/_audios/guard-end.m4a"></audio>
+    <audio id="audio-hunter-start" src="/_audios/hunter-start.m4a"></audio>
+    <audio id="audio-hunter-end" src="/_audios/hunter-end.m4a"></audio>
 </div>
 </body>
 <script src="/_scripts/require.js"></script>
