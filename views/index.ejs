@@ -2,30 +2,57 @@
 <html>
 
 <head>
-  <title>狼雨</title>
-  <link rel='stylesheet' href='/_styles/style.css' />
+    <title>狼雨</title>
+    <link rel='stylesheet' href='/_styles/style.css'/>
 </head>
 
 <body>
-  <div class="seat"></div>
-  <div class="func none"></div>
+<div class="room">
+    <div class="room-btn">
+        <button class="btn btn-danger btn-room-create">创建房间</button>
+        <button class="btn btn-primary btn-room-enter">进入房间</button>
+    </div>
+    <div class="room-create none">
+        <div class="btn-group" role="group">
+
+        </div>
+        <button class="btn btn-danger btn-create">创建</button>
+        <div class="result-create"></div>
+    </div>
+    <div class="room-enter none">
+        <input class="enter-number"/>
+        <button class="btn btn-primary btn-enter">进入</button>
+    </div>
+</div>
+<div class="seats none">
+    <h1 class="room-title">房间号：<span class="room-title-number"></span></h1>
+</div>
+
+<div class="function">
+    <button class="btn btn-danger btn-sit none">坐下</button>
+    <button class="btn btn-success btn-role none">查看身份</button>
+    <button class="btn btn-success btn-skill none">使用技能</button>
+    <button class="btn btn-danger btn-start none">游戏开始</button>
+    <button class="btn btn-danger btn-night none">查看昨夜</button>
+    <button class="btn btn-danger btn-all none">查看所有</button>
+</div>
 </body>
 <script src="/_scripts/require.js"></script>
 <script>
-  requirejs.config({
-    baseUrl: '_scripts',
-    paths: {
-      jquery: 'jquery.min',
-      bootstrap: 'bootstrap.min'
-    },
-    shim: {
-      'bootstrap': {
-        deps: ['jquery']
-      }
-    }
-  });
+    requirejs.config({
+        baseUrl: '_scripts',
+        paths: {
+            jquery: 'jquery.min',
+            bootstrap: 'bootstrap.min'
+        },
+        shim: {
+            'bootstrap': {
+                deps: ['jquery']
+            }
+        }
+    });
 
 </script>
-<script src="_scripts/main.js"></script>
+<script src="/_scripts/main.js"></script>
 
 </html>

@@ -1,6 +1,8 @@
 var core = require('./lib/core');
 
-var roomNumber = core.createRoom(9);
+var roomNumber = core.createRoom(0);
+
+console.log("===房间: {0}===".replace("{0}", roomNumber));
 
 var step;
 
@@ -18,7 +20,7 @@ core.sitDown(roomNumber, 7);
 core.sitDown(roomNumber, 8);
 core.sitDown(roomNumber, 9);
 
-console.log("===test role===");
+console.log("===测试角色===");
 var testrole = core.getRole(roomNumber, 3);
 console.log("seat 3 is: " + testrole.name);
 

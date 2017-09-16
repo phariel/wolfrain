@@ -1,1 +1,1 @@
-body{padding:50px;font:14px "Lucida Grande",Helvetica,Arial,sans-serif}a{color:#00B7FF}
+@import "bootstrap.min.css";body{padding:2.5rem;font:5rem "Lucida Grande",Helvetica,Arial,sans-serif}.none{display:none !important}.room{text-align:center}.room .btn-create{margin-left:2.5rem}.room .result-create{color:#761c19}.seats .room-title{font-size:7rem;text-align:center;color:#1b6d85}.seats .btn-seat{display:inline-block;margin-right:5rem;margin-top:5rem;font-size:14rem}.btn{font-size:7rem}.function{padding-top:5rem}
