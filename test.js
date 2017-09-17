@@ -47,7 +47,7 @@ step = getAlives.step;
 console.log("狼人请刀人: ");
 console.log(getAlives);
 console.log("狼刀: " + hunterSeatNumber);
-core.wolfKill(roomNumber, step, hunterSeatNumber);
+core.wolfKill(roomNumber, hunterSeatNumber);
 console.log("==女巫===");
 var lastKill = core.getKilledWitch(roomNumber, witchSeatNumber);
 console.log("这个人死了，你要救吗: " + lastKill);

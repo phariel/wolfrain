@@ -8,6 +8,15 @@ router.get('/', function (req, res, next) {
     res.render('index');
 });
 
+router.post('/debug', function (req, res, next) {
+    var roomNumber = req.param('roomNumber');
+    core.debug(roomNumber);
+    res.json({
+        debug: 'okay'
+    });
+});
+
+
 router.get('/createTypes', function (req, res, next) {
     res.json(core.getRoomTypes());
 });
@@ -47,6 +56,24 @@ router.post('/getSelfRole', function (req, res) {
 router.post('/gameStart', function (req, res) {
     var roomNumber = req.param('roomNumber');
     res.json(core.gameStart(roomNumber));
+});
+
+router.post('/getAdminVoices', function (req, res) {
+    var roomNumber = req.param('roomNumber');
+    res.json(core.getAdminVoices(roomNumber));
+});
+
+router.post('/getSkillList', function (req, res) {
+    var roomNumber = req.param('roomNumber');
+    var seatNumber = req.param('seatNumber');
+    res.json(core.getActionList(roomNumber, seatNumber));
+});
+
+router.post('/castSkill', function (req, res) {
+    var roomNumber = req.param('roomNumber');
+    var selfSeatNumber = req.param('selfSeatNumber');
+    var targetSeatNumbers = req.param('targetSeatNumbers');
+    res.json(core.handleAction(roomNumber, selfSeatNumber, JSON.parse(targetSeatNumbers)));
 });
 
 module.exports = router;

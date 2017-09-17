@@ -21,55 +21,125 @@ require(['jquery', 'bootstrap'], function ($, bs) {
     var elSit = $('.btn-sit');
     var btnRole = $('.btn-role');
     var btnStart = $('.btn-start');
+    var btnSkill = $('.btn-skill');
+    var elSkill = $('.skill-area');
+
+    var witchTemplate = '<div class="skill skill-witch">' +
+        '<h3 class="skill-title"></h3>' +
+        '<div class="skill-row"><label>使用解药: </label><select class="form-control heal target"/></div>' +
+        '<div class="skill-row"><label>使用毒药: </label><select class="form-control poison target"/></div>' +
+        '<div class="skill-footer"><button class="btn btn-danger skill-okay">确认</button>' +
+        '<button class="btn skill-cancel">取消</button></div>' +
+        '</div>';
+
+    var skillTemplate = '<div class="skill">' +
+        '<h3 class="skill-title"></h3>' +
+        '<div class="skill-row"><select class="form-control target"/></div>' +
+        '<div class="skill-footer"><button class="btn btn-danger skill-okay">确认</button>' +
+        '<button class="btn skill-cancel">取消</button></div>' +
+        '</div>';
 
     var createType;
     var seat = 0;
     var startStatusInterval;
+    var getAdminVoicesInterval;
 
     function setStorage(key, value) {
-        window.localStorage.setItem(key, value);
+        localStorage.setItem(key, value);
     }
 
     function getStorage(key) {
-        return window.localStorage.getItem(key);
+        return localStorage.getItem(key);
+    }
+
+    function playVoices(name, nextName) {
+        var voice = $('#audio-' + name);
+        if (nextName) {
+            voice.one('ended', function () {
+                $('#audio-' + nextName)[0].play();
+            })
+        }
+
+        voice[0].play();
     }
 
     function initSeat() {
         var roomNumber = getStorage('room');
         var admin = getStorage('admin');
-        var seat = getStorage('seat');
-        if (seat) {
-            seat = JSON.parse(seat);
-            if (seat[roomNumber]) {
-                elSeatTitle.text(seat[roomNumber]);
+        var state = getStorage('state');
+        var started;
+
+        $.ajax({
+            url: '/debug',
+            method: 'POST',
+            data: {
+                roomNumber: roomNumber
+            },
+            success: function (data) {
+
+            }
+        });
+
+        if (state) {
+            state = JSON.parse(state);
+            if (state[roomNumber]) {
+                elSeatTitle.text(state[roomNumber].seat);
+                started = state[roomNumber].started;
                 btnRole.removeClass('none');
             }
         }
 
-        if (admin === roomNumber) {
-            btnStart.removeClass('none');
+        if (started) {
+            clearInterval(startStatusInterval);
+            elSeats.addClass('none');
+            btnSkill.removeClass('none');
+
+            if (admin === roomNumber) {
+                btnStart.addClass('none');
+                getAdminVoicesInterval = setInterval(function () {
+                    $.ajax({
+                        url: '/getAdminVoices',
+                        method: 'POST',
+                        data: {
+                            roomNumber: roomNumber
+                        },
+                        success: function (data) {
+                            if (data.length > 0) {
+                                playVoices(data[0], data[1]);
+                            }
+                        }
+                    });
+                }, 2000);
+            }
+
+
+        } else {
+            if (admin === roomNumber) {
+                btnStart.removeClass('none');
+            }
+
+            elRoomTitle.text(roomNumber);
+            if (roomNumber) {
+                $.ajax({
+                    url: '/roomTotal',
+                    method: 'POST',
+                    data: {
+                        roomNumber: roomNumber
+                    },
+                    success: function (data) {
+                        var total = data.roomTotal;
+                        for (var i = 0; i < total; i++) {
+                            elSeats.append($(seatButton).text(i + 1 + '号').data('seat', i + 1));
+                        }
+                        elRoom.addClass('none');
+                        elSeats.removeClass('none');
+                    }
+                });
+            }
+            clearInterval(startStatusInterval);
+            startStatusInterval = setInterval(getStartStatus, 1000);
         }
 
-        elRoomTitle.text(roomNumber);
-        if (roomNumber) {
-            $.ajax({
-                url: '/roomTotal',
-                method: 'POST',
-                data: {
-                    roomNumber: roomNumber
-                },
-                success: function (data) {
-                    var total = data.roomTotal;
-                    for (var i = 0; i < total; i++) {
-                        elSeats.append($(seatButton).text(i + 1 + '号').data('seat', i + 1));
-                    }
-                    elRoom.addClass('none');
-                    elSeats.removeClass('none');
-                }
-            });
-        }
-        clearInterval(startStatusInterval);
-        startStatusInterval = setInterval(getStartStatus, 1000);
     }
 
     function getStartStatus() {
@@ -139,13 +209,15 @@ require(['jquery', 'bootstrap'], function ($, bs) {
     });
 
     elSeats.on('click', '.btn-seat', function () {
-        var seatCache = getStorage('seat');
-        if (seatCache) {
-            seatCache = JSON.parse(seatCache);
+        var state = getStorage('state');
+        if (state) {
+            state = JSON.parse(state);
         }
         var room = getStorage('room');
-        if (seatCache) {
-            seat = seatCache[room];
+        if (state) {
+            if (state[room]) {
+                seat = state[room].seat;
+            }
         } else {
             seat = 0;
         }
@@ -168,11 +240,15 @@ require(['jquery', 'bootstrap'], function ($, bs) {
     elSit.on('click', function () {
         if (seat > 0) {
             var room = getStorage('room');
-            var seatCache = getStorage('seat');
-            if (!seatCache) {
-                seatCache = {};
+            var stateCache = getStorage('state');
+            if (!stateCache) {
+                stateCache = {};
             } else {
-                seatCache = JSON.parse(seatCache);
+                stateCache = JSON.parse(stateCache);
+            }
+
+            if (!stateCache[room]) {
+                stateCache[room] = {};
             }
 
             $.ajax({
@@ -185,8 +261,8 @@ require(['jquery', 'bootstrap'], function ($, bs) {
                 success: function (data) {
                     if (data.success) {
                         elSit.addClass('none');
-                        seatCache[room] = seat;
-                        setStorage('seat', JSON.stringify(seatCache));
+                        stateCache[room].seat = seat;
+                        setStorage('state', JSON.stringify(stateCache));
                         elSeatTitle.text(seat);
                         btnRole.removeClass('none');
                     } else {
@@ -224,10 +300,11 @@ require(['jquery', 'bootstrap'], function ($, bs) {
     });
     btnRole.on('click', function () {
         var room = getStorage('room');
-        var seat = getStorage('seat');
-        if (seat) {
-            seat = JSON.parse(seat);
-            seat = seat[room];
+        var state = getStorage('state');
+        var seat;
+        if (state) {
+            state = JSON.parse(state);
+            seat = state[room].seat;
         }
         $.ajax({
             url: '/getSelfRole',
@@ -244,6 +321,10 @@ require(['jquery', 'bootstrap'], function ($, bs) {
     });
     btnStart.on('click', function () {
         var room = getStorage('room');
+        var state = getStorage('state');
+        if (state) {
+            state = JSON.parse(state);
+        }
 
         $.ajax({
             url: '/gameStart',
@@ -255,8 +336,87 @@ require(['jquery', 'bootstrap'], function ($, bs) {
                 if (!data.started) {
                     elAlertBody.text('还有人没有看身份');
                     elAlert.modal('show');
+                } else {
+                    state[room].started = true;
+                    setStorage('state', JSON.stringify(state));
+                    initSeat();
                 }
             }
         });
+    });
+    btnSkill.on('click', function () {
+        elSkill.html('');
+        var room = getStorage('room');
+        var state = getStorage('state');
+        var seat;
+        if (state) {
+            state = JSON.parse(state);
+            if (state[room]) {
+                seat = state[room].seat;
+            }
+        }
+
+        if (room && seat) {
+            $.ajax({
+                url: '/getSkillList',
+                method: 'POST',
+                data: {
+                    roomNumber: room,
+                    seatNumber: seat
+                },
+                success: function (data) {
+                    var role = data.role;
+                    switch (role) {
+                        case 'none':
+                            break;
+                        case 'witch':
+                            break;
+                        case 'hunter':
+                            break;
+                        default:
+                            var title;
+
+                            switch (role) {
+                                case 'wolf':
+                                    title = '狼人请猎杀: ';
+                                    break;
+                                case 'seer':
+                                    title = '预言家请验人: ';
+                                    break;
+                                case 'guard':
+                                    title = '守卫请守人: ';
+                                    break;
+                            }
+
+                            var elTemp = $(skillTemplate);
+                            var elTarget = elTemp.find('.target');
+                            elTemp.find('.skill-title').text(title);
+                            elTarget.append('<option value="0" selected>不动作</option>');
+                            data.list[0].seats.forEach(function (seat) {
+                                elTarget.append('<option value="' + seat + '">' + seat + '号</option>');
+                            });
+
+                            elTemp.find('.skill-cancel').on('click', function () {
+                                elSkill.html('');
+                            });
+                            elTemp.find('.skill-okay').on('click', function () {
+                                $.ajax({
+                                    url: '/castSkill',
+                                    method: 'POST',
+                                    data: {
+                                        roomNumber: room,
+                                        selfSeatNumber: seat,
+                                        targetSeatNumbers: JSON.stringify([elTarget.val()])
+                                    },
+                                    success: function () {
+                                        elSkill.html('');
+                                    }
+                                });
+                            });
+                            elSkill.html(elTemp);
+                    }
+                }
+            });
+        }
     });
 });
