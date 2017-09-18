@@ -4,7 +4,8 @@ var core = require('../lib/core');
 
 /* GET home page. */
 router.get('/', function (req, res, next) {
-    res.render('index');
+    var dev = process.env.DEV;
+    res.render(dev ? 'index' : 'index-release');
 });
 
 router.get('/createTypes', function (req, res, next) {
