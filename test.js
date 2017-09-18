@@ -1,6 +1,8 @@
 var core = require('./lib/core');
 
-var roomNumber = core.createRoom(9);
+var roomNumber = core.createRoom(0);
+
+console.log("===房间: {0}===".replace("{0}", roomNumber));
 
 var step;
 
@@ -18,7 +20,7 @@ core.sitDown(roomNumber, 7);
 core.sitDown(roomNumber, 8);
 core.sitDown(roomNumber, 9);
 
-console.log("===test role===");
+console.log("===测试角色===");
 var testrole = core.getRole(roomNumber, 3);
 console.log("seat 3 is: " + testrole.name);
 
@@ -45,7 +47,7 @@ step = getAlives.step;
 console.log("狼人请刀人: ");
 console.log(getAlives);
 console.log("狼刀: " + hunterSeatNumber);
-core.wolfKill(roomNumber, step, hunterSeatNumber);
+core.wolfKill(roomNumber, hunterSeatNumber);
 console.log("==女巫===");
 var lastKill = core.getKilledWitch(roomNumber, witchSeatNumber);
 console.log("这个人死了，你要救吗: " + lastKill);

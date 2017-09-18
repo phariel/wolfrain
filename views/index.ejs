@@ -2,30 +2,82 @@
 <html>
 
 <head>
-  <title>狼雨</title>
-  <link rel='stylesheet' href='/_styles/style.css' />
+    <title>狼雨</title>
+    <link rel='stylesheet' href='/_styles/style.css'/>
+    <meta name="viewport" content="user-scalable=no" />
 </head>
 
 <body>
-  <div class="seat"></div>
-  <div class="func none"></div>
+<h1 class="room-title">房间号：<span class="room-title-number"></span> 座位号：<span class="seat-title-number"></span></h1>
+<div class="room">
+    <div class="room-btn">
+        <button class="btn btn-danger btn-room-create">创建房间</button>
+        <button class="btn btn-primary btn-room-enter">进入房间</button>
+    </div>
+    <div class="room-create none">
+        <div class="btn-group" role="group">
+
+        </div>
+        <button class="btn btn-danger btn-create">创建</button>
+        <div class="result-create"></div>
+    </div>
+    <div class="room-enter none">
+        <input class="enter-number form-control" type="number" min="1"/>
+        <button class="btn btn-primary btn-enter">进入</button>
+    </div>
+</div>
+<div class="seats none"></div>
+
+<div class="function-area">
+    <button class="btn btn-info btn-sit none">坐下</button>
+    <button class="btn btn-success btn-role none">查看身份</button>
+    <button class="btn btn-success btn-skill none">使用技能</button>
+    <button class="btn btn-danger btn-start none">游戏开始</button>
+    <button class="btn btn-danger btn-last-night none">查看昨夜</button>
+    <button class="btn btn-warning btn-judge none">移交法官</button>
+</div>
+<div class="skill-area"></div>
+<div class="modal" id="alert-dialog" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-body"></div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">知道了</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="audio-area">
+    <audio id="audio-enter-night" src="/_audios/enter-night.m4a"></audio>
+    <audio id="audio-enter-day" src="/_audios/enter-day.m4a"></audio>
+    <audio id="audio-wolf-start" src="/_audios/wolf-start.m4a"></audio>
+    <audio id="audio-wolf-end" src="/_audios/wolf-end.m4a"></audio>
+    <audio id="audio-witch-start" src="/_audios/witch-start.m4a"></audio>
+    <audio id="audio-witch-end" src="/_audios/witch-end.m4a"></audio>
+    <audio id="audio-seer-start" src="/_audios/seer-start.m4a"></audio>
+    <audio id="audio-seer-end" src="/_audios/seer-end.m4a"></audio>
+    <audio id="audio-guard-start" src="/_audios/guard-start.m4a"></audio>
+    <audio id="audio-guard-end" src="/_audios/guard-end.m4a"></audio>
+    <audio id="audio-hunter-start" src="/_audios/hunter-start.m4a"></audio>
+    <audio id="audio-hunter-end" src="/_audios/hunter-end.m4a"></audio>
+</div>
 </body>
 <script src="/_scripts/require.js"></script>
 <script>
-  requirejs.config({
-    baseUrl: '_scripts',
-    paths: {
-      jquery: 'jquery.min',
-      bootstrap: 'bootstrap.min'
-    },
-    shim: {
-      'bootstrap': {
-        deps: ['jquery']
-      }
-    }
-  });
+    requirejs.config({
+        baseUrl: '_scripts',
+        paths: {
+            jquery: 'jquery.min',
+            bootstrap: 'bootstrap.min'
+        },
+        shim: {
+            'bootstrap': {
+                deps: ['jquery']
+            }
+        }
+    });
 
 </script>
-<script src="_scripts/main.js"></script>
+<script src="/_scripts/main.js"></script>
 
 </html>
