@@ -13,8 +13,8 @@ require(['jquery', 'bootstrap'], function ($, bs) {
     var elResultCreate = elRoom.find('.result-create');
     var typeButton = '<button class="btn btn-type-create"></button>';
     var seatButton = '<button class="btn btn-seat"></button>';
-    var elRoomTitle = elSeats.find('.room-title-number');
-    var elSeatTitle = elSeats.find('.seat-title-number');
+    var elRoomTitle = $('.room-title-number');
+    var elSeatTitle = $('.seat-title-number');
     var elAlert = $('#alert-dialog');
     var elAlertBody = elAlert.find('.modal-body');
 
@@ -22,12 +22,19 @@ require(['jquery', 'bootstrap'], function ($, bs) {
     var btnRole = $('.btn-role');
     var btnStart = $('.btn-start');
     var btnSkill = $('.btn-skill');
+    var btnLastNight = $('.btn-last-night');
+    var btnJudge = $('.btn-judge');
     var elSkill = $('.skill-area');
 
+    var tagRed = '<span class="text-red">{0}</span>';
+    var tagGreen = '<span class="text-green">{0}</span>';
+    var tagBlue = '<span class="text-blue">{0}</span>';
+
     var witchTemplate = '<div class="skill skill-witch">' +
-        '<h3 class="skill-title"></h3>' +
+        '<h3 class="skill-title">女巫请开始操作</h3>' +
         '<div class="skill-row"><label>使用解药: </label><select class="form-control heal target"/></div>' +
         '<div class="skill-row"><label>使用毒药: </label><select class="form-control poison target"/></div>' +
+        '<div class="skill-row"><label class="witch-error"></label></div>' +
         '<div class="skill-footer"><button class="btn btn-danger skill-okay">确认</button>' +
         '<button class="btn skill-cancel">取消</button></div>' +
         '</div>';
@@ -43,6 +50,8 @@ require(['jquery', 'bootstrap'], function ($, bs) {
     var seat = 0;
     var startStatusInterval;
     var getAdminVoicesInterval;
+    var getAdminNightEndInterval;
+    var roomStarted;
 
     function setStorage(key, value) {
         localStorage.setItem(key, value);
@@ -56,10 +65,11 @@ require(['jquery', 'bootstrap'], function ($, bs) {
         var voice = $('#audio-' + name);
         if (nextName) {
             voice.one('ended', function () {
-                $('#audio-' + nextName)[0].play();
+                setTimeout(function () {
+                    $('#audio-' + nextName)[0].play();
+                }, 2000);
             })
         }
-
         voice[0].play();
     }
 
@@ -68,17 +78,6 @@ require(['jquery', 'bootstrap'], function ($, bs) {
         var admin = getStorage('admin');
         var state = getStorage('state');
         var started;
-
-        $.ajax({
-            url: '/debug',
-            method: 'POST',
-            data: {
-                roomNumber: roomNumber
-            },
-            success: function (data) {
-
-            }
-        });
 
         if (state) {
             state = JSON.parse(state);
@@ -90,12 +89,12 @@ require(['jquery', 'bootstrap'], function ($, bs) {
         }
 
         if (started) {
-            clearInterval(startStatusInterval);
             elSeats.addClass('none');
             btnSkill.removeClass('none');
 
             if (admin === roomNumber) {
                 btnStart.addClass('none');
+                clearInterval(getAdminVoicesInterval);
                 getAdminVoicesInterval = setInterval(function () {
                     $.ajax({
                         url: '/getAdminVoices',
@@ -106,6 +105,23 @@ require(['jquery', 'bootstrap'], function ($, bs) {
                         success: function (data) {
                             if (data.length > 0) {
                                 playVoices(data[0], data[1]);
+                            }
+                        }
+                    });
+                }, 2000);
+
+                clearInterval(getAdminNightEndInterval);
+                getAdminNightEndInterval = setInterval(function () {
+                    $.ajax({
+                        url: '/getNightEnd',
+                        method: 'POST',
+                        data: {
+                            roomNumber: roomNumber
+                        },
+                        success: function (data) {
+                            if (data && data.ended) {
+                                btnLastNight.removeClass('none');
+                                btnJudge.removeClass('none');
                             }
                         }
                     });
@@ -129,7 +145,7 @@ require(['jquery', 'bootstrap'], function ($, bs) {
                     success: function (data) {
                         var total = data.roomTotal;
                         for (var i = 0; i < total; i++) {
-                            elSeats.append($(seatButton).text(i + 1 + '号').data('seat', i + 1));
+                            elSeats.append($(seatButton).text(i + 1).data('seat', i + 1));
                         }
                         elRoom.addClass('none');
                         elSeats.removeClass('none');
@@ -145,6 +161,12 @@ require(['jquery', 'bootstrap'], function ($, bs) {
     function getStartStatus() {
         var room = getStorage('room');
         var admin = getStorage('admin');
+        var state = getStorage('state');
+        if (state) {
+            state = JSON.parse(state);
+        } else {
+            state = {};
+        }
         var elSeatItems = elSeats.find('.btn-seat');
         $.ajax({
             url: '/startstatus',
@@ -153,18 +175,32 @@ require(['jquery', 'bootstrap'], function ($, bs) {
                 roomNumber: room
             },
             success: function (data) {
-                if (data.seats) {
-                    data.seats.forEach(function (seatSit, i) {
-                        if (data.ready[i]) {
-                            elSeatItems.eq(i).addClass('btn-success').removeClass('btn-info');
-                        } else if (seatSit) {
-                            elSeatItems.eq(i).addClass('btn-info');
+                if (data.started) {
+                    if (!roomStarted) {
+                        clearInterval(startStatusInterval);
+                        roomStarted = true;
+                        if (!state[room]) {
+                            state[room] = {};
                         }
-                    });
+                        state[room].started = true;
+                        setStorage('state', JSON.stringify(state));
+                        initSeat();
+                    }
+                } else {
+                    if (data.seats) {
+                        data.seats.forEach(function (seatSit, i) {
+                            if (data.ready[i]) {
+                                elSeatItems.eq(i).addClass('btn-success').removeClass('btn-info');
+                            } else if (seatSit) {
+                                elSeatItems.eq(i).addClass('btn-info');
+                            }
+                        });
+                    }
+                    if (room === admin) {
+                        btnStart.toggleClass('none', data.started);
+                    }
                 }
-                if (room === admin) {
-                    btnStart.toggleClass('none', data.started);
-                }
+
             }
         });
     }
@@ -266,7 +302,7 @@ require(['jquery', 'bootstrap'], function ($, bs) {
                         elSeatTitle.text(seat);
                         btnRole.removeClass('none');
                     } else {
-                        elAlertBody.text('坐下失败，是否坐错？');
+                        elAlertBody.html(tagRed.replace('{0}', '坐下失败，是否坐错？'));
                         elAlert.modal('show');
                     }
                 }
@@ -289,10 +325,11 @@ require(['jquery', 'bootstrap'], function ($, bs) {
             },
             success: function (data) {
                 if (data && data.roomTotal > 0) {
+                    elRoomEnter.addClass('none');
                     setStorage('room', roomNumber);
                     initSeat();
                 } else {
-                    elAlertBody.text("没有这个房间！");
+                    elAlertBody.html(tagRed.replace('{0}', "没有这个房间！"));
                     elAlert.modal('show');
                 }
             }
@@ -314,7 +351,14 @@ require(['jquery', 'bootstrap'], function ($, bs) {
                 seatNumber: seat
             },
             success: function (data) {
-                elAlertBody.text('你的身份：' + data.name);
+                var nameStr;
+                if (data.role === 'wolf') {
+                    nameStr = tagRed.replace('{0}', data.name);
+                } else {
+                    nameStr = tagGreen.replace('{0}', data.name);
+                }
+
+                elAlertBody.html('你的身份：' + nameStr);
                 elAlert.modal('show');
             }
         });
@@ -324,6 +368,8 @@ require(['jquery', 'bootstrap'], function ($, bs) {
         var state = getStorage('state');
         if (state) {
             state = JSON.parse(state);
+        } else {
+            state = {};
         }
 
         $.ajax({
@@ -334,12 +380,70 @@ require(['jquery', 'bootstrap'], function ($, bs) {
             },
             success: function (data) {
                 if (!data.started) {
-                    elAlertBody.text('还有人没有看身份');
+                    elAlertBody.html(tagRed.replace('{0}', '还有人没有看身份'));
                     elAlert.modal('show');
                 } else {
+                    if (!state[room]) {
+                        state[room] = {};
+                    }
                     state[room].started = true;
                     setStorage('state', JSON.stringify(state));
                     initSeat();
+                }
+            }
+        });
+    });
+    btnLastNight.on('click', function () {
+        var room = getStorage('room');
+        $.ajax({
+            url: '/getNightDead',
+            method: 'POST',
+            data: {
+                roomNumber: room
+            },
+            success: function (data) {
+                if (data && data.result) {
+                    elAlertBody.html(tagRed.replace('{0}', data.result));
+                    elAlert.modal('show');
+                }
+            }
+        });
+    });
+    btnJudge.on('click', function () {
+        var room = getStorage('room');
+        $.ajax({
+            url: '/getJudge',
+            method: 'POST',
+            data: {
+                roomNumber: room
+            },
+            success: function (data) {
+                if (data && data.seats) {
+                    var elTemp = $(skillTemplate);
+                    var elTarget = elTemp.find('.target');
+
+                    data.seats.forEach(function (seat) {
+                        elTarget.append('<option value="' + seat + '">' + seat + '号</option>');
+                    });
+                    elTemp.find('.skill-cancel').on('click', function () {
+                        elSkill.html('');
+                    });
+
+                    elTemp.find('.skill-okay').on('click', function () {
+                        $.ajax({
+                            url: '/setJudge',
+                            method: 'POST',
+                            data: {
+                                roomNumber: room,
+                                seatNumber: parseInt(elTarget.val(), 10)
+                            },
+                            success: function () {
+                                elSkill.html('');
+                            }
+                        });
+                    });
+
+                    elSkill.html(elTemp);
                 }
             }
         });
@@ -365,39 +469,158 @@ require(['jquery', 'bootstrap'], function ($, bs) {
                     seatNumber: seat
                 },
                 success: function (data) {
+                    if (data.judge) {
+                        var judgeResult = '';
+                        var roleItem = '<div>{0}号身份: {1}</div>';
+                        var actionItem = '<div>{0}: {1}号</div>';
+                        if (data.roles) {
+                            data.roles.forEach(function (role) {
+                                judgeResult += roleItem.replace('{0}', role.seatNumber).replace('{1}', role.name);
+                            });
+                        }
+                        if (data.action) {
+                            Object.keys(data.action).forEach(function (action) {
+                                if (action === 'kill') {
+                                    judgeResult += actionItem.replace('{0}', '狼刀').replace('{1}', data.action[action]);
+                                }
+                                if (action === 'heal') {
+                                    judgeResult += actionItem.replace('{0}', '解药').replace('{1}', data.action[action]);
+                                }
+                                if (action === 'poison') {
+                                    judgeResult += actionItem.replace('{0}', '毒药').replace('{1}', data.action[action]);
+                                }
+                                if (action === 'guard') {
+                                    judgeResult += actionItem.replace('{0}', '守护').replace('{1}', data.action[action]);
+                                }
+                            });
+                        }
+
+                        elSkill.html(judgeResult);
+
+                        return;
+                    }
+
+                    btnSkill.addClass('none');
                     var role = data.role;
+                    var elTemp;
                     switch (role) {
                         case 'none':
+                            btnSkill.removeClass('none');
                             break;
                         case 'witch':
+                            elTemp = $(witchTemplate);
+                            var elHeal = elTemp.find('.heal.target');
+                            var elPoison = elTemp.find('.poison.target');
+                            var elError = elTemp.find('.witch-error');
+                            var errorMsg = '';
+                            var healList = data.list[0];
+                            var poisonList = data.list[1];
+                            var restrict = data.restrict;
+
+                            elHeal.append('<option value="0" selected>不救</option>');
+                            elPoison.append('<option value="0" selected>不动作</option>');
+                            if (restrict && restrict.double === false) {
+                                elHeal.on('change', function () {
+                                    if (parseInt($(this).val(), 10) !== 0) {
+                                        elPoison.attr('disabled', 'disabled');
+                                    } else {
+                                        elPoison.removeAttr('disabled');
+                                    }
+                                });
+                            }
+
+                            switch (healList) {
+                                case 0:
+                                    elHeal.attr('disabled');
+                                    errorMsg += "解药用完了。";
+                                    break;
+                                case -1:
+                                    elHeal.attr('disabled');
+                                    errorMsg += "昨晚死的是自己，不能自救。";
+                                    break;
+                                default:
+                                    elHeal.append('<option value="' + healList + '">' + healList + '号</option>');
+                            }
+
+                            switch (poisonList) {
+                                case 0:
+                                    elPoison.attr('disabled');
+                                    errorMsg += "毒药用完了。";
+                                    break;
+                                default:
+                                    poisonList.seats.forEach(function (seat) {
+                                        elPoison.append('<option value="' + seat + '">' + seat + '号</option>');
+                                    });
+                            }
+
+                            elError.text(errorMsg);
+
+                            elTemp.find('.skill-cancel').on('click', function () {
+                                elSkill.html('');
+                                btnSkill.removeClass('none');
+                            });
+                            elTemp.find('.skill-okay').on('click', function () {
+                                var seatNumbers = [];
+
+                                seatNumbers.push(elHeal.attr('disabled') === 'disabled' ? 0 : parseInt(elHeal.val(), 10));
+                                seatNumbers.push(elPoison.attr('disabled') === 'disabled' ? 0 : parseInt(elPoison.val(), 10));
+
+                                $.ajax({
+                                    url: '/castSkill',
+                                    method: 'POST',
+                                    data: {
+                                        roomNumber: room,
+                                        selfSeatNumber: seat,
+                                        targetSeatNumbers: JSON.stringify(seatNumbers)
+                                    },
+                                    success: function (data) {
+                                        elSkill.html('');
+                                        btnSkill.removeClass('none');
+                                        if (data && data.result) {
+                                            elAlertBody.text(elTarget.val() + '号: ' + tagBlue.replace('{0}', data.result));
+                                        }
+                                    }
+                                });
+                            });
+                            elSkill.html(elTemp);
+
+
                             break;
                         case 'hunter':
+                            btnSkill.removeClass('none');
+                            var hunterResult = data.list[0].result;
+                            hunterResult = hunterResult.replace('\[', '<span class="text-green">').replace('\]', '</span>').replace('\{', '<span class="text-red">').replace('\}', '</span>');
+                            elAlertBody.html(hunterResult);
+                            elAlert.modal('show');
                             break;
                         default:
                             var title;
+                            elTemp = $(skillTemplate);
+                            var elTarget = elTemp.find('.target');
 
                             switch (role) {
                                 case 'wolf':
                                     title = '狼人请猎杀: ';
+                                    elTarget.append('<option value="0" selected>不动作</option>');
                                     break;
                                 case 'seer':
                                     title = '预言家请验人: ';
                                     break;
                                 case 'guard':
                                     title = '守卫请守人: ';
+                                    elTarget.append('<option value="0" selected>不动作</option>');
                                     break;
                             }
 
-                            var elTemp = $(skillTemplate);
-                            var elTarget = elTemp.find('.target');
                             elTemp.find('.skill-title').text(title);
-                            elTarget.append('<option value="0" selected>不动作</option>');
+
                             data.list[0].seats.forEach(function (seat) {
                                 elTarget.append('<option value="' + seat + '">' + seat + '号</option>');
                             });
 
                             elTemp.find('.skill-cancel').on('click', function () {
                                 elSkill.html('');
+                                btnSkill.removeClass('none');
                             });
                             elTemp.find('.skill-okay').on('click', function () {
                                 $.ajax({
@@ -406,10 +629,15 @@ require(['jquery', 'bootstrap'], function ($, bs) {
                                     data: {
                                         roomNumber: room,
                                         selfSeatNumber: seat,
-                                        targetSeatNumbers: JSON.stringify([elTarget.val()])
+                                        targetSeatNumbers: JSON.stringify([parseInt(elTarget.val(), 10)])
                                     },
-                                    success: function () {
+                                    success: function (data) {
                                         elSkill.html('');
+                                        btnSkill.removeClass('none');
+                                        if (data && data.result) {
+                                            elAlertBody.text(elTarget.val() + '号: ' + tagBlue.replace('{0}', data.result));
+                                            elAlert.modal('show');
+                                        }
                                     }
                                 });
                             });

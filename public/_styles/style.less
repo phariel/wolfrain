@@ -30,17 +30,19 @@ body {
   }
 }
 
+.room-title {
+  font-size: 7rem;
+  text-align: center;
+  color: #1b6d85;
+}
+
 .seats {
-  .room-title {
-    font-size: 7rem;
-    text-align: center;
-    color: #1b6d85;
-  }
   .btn-seat {
     display: inline-block;
     margin-right: 5rem;
     margin-top: 5rem;
     font-size: 14rem;
+    width: 26rem;
   }
 }
 
@@ -49,7 +51,9 @@ body {
 }
 
 .function-area {
-  padding-top: 5rem;
+  .btn {
+    margin-top: 5rem;
+  }
 }
 
 #alert-dialog {
@@ -81,5 +85,17 @@ body {
     .skill-cancel {
       margin-left: 5rem;
     }
+  }
+}
+
+span {
+  &.text-red {
+    color: #c7254e;
+  }
+  &.text-green {
+    color: #4cae4c;
+  }
+  &.text-blue {
+    color: #2e6da4;
   }
 }

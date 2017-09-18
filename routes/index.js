@@ -1,21 +1,11 @@
 var express = require('express');
 var router = express.Router();
-var ui = require('../lib/ui');
 var core = require('../lib/core');
 
 /* GET home page. */
 router.get('/', function (req, res, next) {
     res.render('index');
 });
-
-router.post('/debug', function (req, res, next) {
-    var roomNumber = req.param('roomNumber');
-    core.debug(roomNumber);
-    res.json({
-        debug: 'okay'
-    });
-});
-
 
 router.get('/createTypes', function (req, res, next) {
     res.json(core.getRoomTypes());
@@ -74,6 +64,27 @@ router.post('/castSkill', function (req, res) {
     var selfSeatNumber = req.param('selfSeatNumber');
     var targetSeatNumbers = req.param('targetSeatNumbers');
     res.json(core.handleAction(roomNumber, selfSeatNumber, JSON.parse(targetSeatNumbers)));
+});
+
+router.post('/getNightEnd', function (req, res) {
+    var roomNumber = req.param('roomNumber');
+    res.json(core.getAdminNightEnd(roomNumber));
+});
+
+router.post('/getNightDead', function (req, res) {
+    var roomNumber = req.param('roomNumber');
+    res.json(core.getDead(roomNumber));
+});
+
+router.post('/getJudge', function (req, res) {
+    var roomNumber = req.param('roomNumber');
+    res.json(core.getJudge(roomNumber));
+});
+
+router.post('/setJudge', function (req, res) {
+    var roomNumber = req.param('roomNumber');
+    var seatNumber = req.param('seatNumber');
+    res.json(core.setJudge(roomNumber, seatNumber));
 });
 
 module.exports = router;
