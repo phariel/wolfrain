@@ -27,18 +27,18 @@ require(['jquery', 'bootstrap'], function ($, bs) {
     var elSkill = $('.skill-area');
 
     var audios = {
-        'enter-night': '/_audios/enter-night.m4a',
-        'enter-day': '/_audios/enter-day.m4a',
-        'wolf-start': '/_audios/wolf-start.m4a',
-        'wolf-end': '/_audios/wolf-end.m4a',
-        'witch-start': '/_audios/witch-start.m4a',
-        'witch-end': '/_audios/witch-end.m4a',
-        'seer-start': '/_audios/seer-start.m4a',
-        'seer-end': '/_audios/seer-end.m4a',
-        'guard-start': '/_audios/guard-start.m4a',
-        'guard-end': '/_audios/guard-end.m4a',
-        'hunter-start': '/_audios/hunter-start.m4a',
-        'hunter-end': '/_audios/hunter-end.m4a'
+        'enter-night': '/_audios/enter-night.mp3',
+        'enter-day': '/_audios/enter-day.mp3',
+        'wolf-start': '/_audios/wolf-start.mp3',
+        'wolf-end': '/_audios/wolf-end.mp3',
+        'witch-start': '/_audios/witch-start.mp3',
+        'witch-end': '/_audios/witch-end.mp3',
+        'seer-start': '/_audios/seer-start.mp3',
+        'seer-end': '/_audios/seer-end.mp3',
+        'guard-start': '/_audios/guard-start.mp3',
+        'guard-end': '/_audios/guard-end.mp3',
+        'hunter-start': '/_audios/hunter-start.mp3',
+        'hunter-end': '/_audios/hunter-end.mp3'
     };
 
     var tagRed = '<span class="text-red">{0}</span>';
@@ -85,7 +85,7 @@ require(['jquery', 'bootstrap'], function ($, bs) {
             $(voice).one('ended', function () {
                 setTimeout(function () {
                     new Audio(audios[nextName]).play();
-                }, 2000);
+                }, 1000);
             })
         }
         voice.play();
@@ -247,6 +247,7 @@ require(['jquery', 'bootstrap'], function ($, bs) {
         if (!createType) {
             elResultCreate.text('还未选择');
         } else {
+            btnCreate.attr('disabled','disabled');
             $.ajax({
                 url: '/createRoom',
                 method: 'POST',
@@ -258,6 +259,8 @@ require(['jquery', 'bootstrap'], function ($, bs) {
                     setStorage('admin', data.roomNumber);
                     initSeat();
                 }
+            }).always(function () {
+                btnCreate.removeAttr('disabled');
             });
         }
     });
@@ -306,6 +309,8 @@ require(['jquery', 'bootstrap'], function ($, bs) {
                 stateCache[room] = {};
             }
 
+            elSit.attr('disabled','disabled');
+
             $.ajax({
                 url: '/sitdown',
                 method: 'POST',
@@ -326,6 +331,8 @@ require(['jquery', 'bootstrap'], function ($, bs) {
                         elAlert.modal('show');
                     }
                 }
+            }).always(function () {
+                elSit.removeAttr('disabled');
             });
         }
     });
@@ -337,6 +344,7 @@ require(['jquery', 'bootstrap'], function ($, bs) {
 
     btnEnter.on('click', function () {
         var roomNumber = elInputEnter.val();
+        btnEnter.attr('disabled','disabled');
         $.ajax({
             url: '/roomTotal',
             method: 'POST',
@@ -353,6 +361,8 @@ require(['jquery', 'bootstrap'], function ($, bs) {
                     elAlert.modal('show');
                 }
             }
+        }).always(function () {
+            btnEnter.removeAttr('disabled');
         });
     });
     btnRole.on('click', function () {
@@ -363,6 +373,7 @@ require(['jquery', 'bootstrap'], function ($, bs) {
             state = JSON.parse(state);
             seat = state[room].seat;
         }
+        btnRole.attr('disabled','disabled');
         $.ajax({
             url: '/getSelfRole',
             method: 'POST',
@@ -381,6 +392,8 @@ require(['jquery', 'bootstrap'], function ($, bs) {
                 elAlertBody.html('你的身份：' + nameStr);
                 elAlert.modal('show');
             }
+        }).always(function () {
+            btnRole.removeAttr('disabled');
         });
     });
     btnStart.on('click', function () {
@@ -391,6 +404,7 @@ require(['jquery', 'bootstrap'], function ($, bs) {
         } else {
             state = {};
         }
+        btnStart.attr('disabled','disabled');
 
         $.ajax({
             url: '/gameStart',
@@ -411,10 +425,13 @@ require(['jquery', 'bootstrap'], function ($, bs) {
                     initSeat();
                 }
             }
+        }).always(function () {
+            btnStart.removeAttr('disabled');
         });
     });
     btnLastNight.on('click', function () {
         var room = getStorage('room');
+        btnLastNight.attr('disabled','disabled');
         $.ajax({
             url: '/getNightDead',
             method: 'POST',
@@ -427,10 +444,13 @@ require(['jquery', 'bootstrap'], function ($, bs) {
                     elAlert.modal('show');
                 }
             }
+        }).always(function () {
+            btnLastNight.removeAttr('disabled');
         });
     });
     btnJudge.on('click', function () {
         var room = getStorage('room');
+        btnJudge.attr('disabled','disabled');
         $.ajax({
             url: '/getJudge',
             method: 'POST',
@@ -466,6 +486,8 @@ require(['jquery', 'bootstrap'], function ($, bs) {
                     elSkill.html(elTemp);
                 }
             }
+        }).always(function () {
+            btnJudge.removeAttr('disabled');
         });
     });
     btnSkill.on('click', function () {
@@ -481,6 +503,7 @@ require(['jquery', 'bootstrap'], function ($, bs) {
         }
 
         if (room && seat) {
+            btnSkill.attr('disabled','disabled');
             $.ajax({
                 url: '/getSkillList',
                 method: 'POST',
@@ -520,12 +543,10 @@ require(['jquery', 'bootstrap'], function ($, bs) {
                         return;
                     }
 
-                    btnSkill.addClass('none');
                     var role = data.role;
                     var elTemp;
                     switch (role) {
                         case 'none':
-                            btnSkill.removeClass('none');
                             break;
                         case 'witch':
                             elTemp = $(witchTemplate);
@@ -577,13 +598,15 @@ require(['jquery', 'bootstrap'], function ($, bs) {
 
                             elTemp.find('.skill-cancel').on('click', function () {
                                 elSkill.html('');
-                                btnSkill.removeClass('none');
                             });
                             elTemp.find('.skill-okay').on('click', function () {
                                 var seatNumbers = [];
+                                var el = $(this);
 
                                 seatNumbers.push(elHeal.attr('disabled') === 'disabled' ? 0 : parseInt(elHeal.val(), 10));
                                 seatNumbers.push(elPoison.attr('disabled') === 'disabled' ? 0 : parseInt(elPoison.val(), 10));
+
+                                el.attr('disabled','disabled');
 
                                 $.ajax({
                                     url: '/castSkill',
@@ -595,11 +618,12 @@ require(['jquery', 'bootstrap'], function ($, bs) {
                                     },
                                     success: function (data) {
                                         elSkill.html('');
-                                        btnSkill.removeClass('none');
                                         if (data && data.result) {
                                             elAlertBody.text(elTarget.val() + '号: ' + tagBlue.replace('{0}', data.result));
                                         }
                                     }
+                                }).always(function () {
+                                    el.removeAttr('disabled');
                                 });
                             });
                             elSkill.html(elTemp);
@@ -607,7 +631,6 @@ require(['jquery', 'bootstrap'], function ($, bs) {
 
                             break;
                         case 'hunter':
-                            btnSkill.removeClass('none');
                             var hunterResult = data.list[0].result;
                             hunterResult = hunterResult.replace('\[', '<span class="text-green">').replace('\]', '</span>').replace('\{', '<span class="text-red">').replace('\}', '</span>');
                             elAlertBody.html(hunterResult);
@@ -640,9 +663,10 @@ require(['jquery', 'bootstrap'], function ($, bs) {
 
                             elTemp.find('.skill-cancel').on('click', function () {
                                 elSkill.html('');
-                                btnSkill.removeClass('none');
                             });
                             elTemp.find('.skill-okay').on('click', function () {
+                                var el=$(this);
+                                el.attr('disabled','disabled');
                                 $.ajax({
                                     url: '/castSkill',
                                     method: 'POST',
@@ -653,17 +677,20 @@ require(['jquery', 'bootstrap'], function ($, bs) {
                                     },
                                     success: function (data) {
                                         elSkill.html('');
-                                        btnSkill.removeClass('none');
                                         if (data && data.result) {
                                             elAlertBody.text(elTarget.val() + '号: ' + tagBlue.replace('{0}', data.result));
                                             elAlert.modal('show');
                                         }
                                     }
+                                }).always(function () {
+                                    el.removeAttr('disabled');
                                 });
                             });
                             elSkill.html(elTemp);
                     }
                 }
+            }).always(function () {
+                btnSkill.removeAttr('disabled');
             });
         }
     });
