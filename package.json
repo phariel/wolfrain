@@ -5,7 +5,7 @@
     "scripts": {
         "postinstall": "node build/r.js -o build/build.js",
         "dist": "node build/r.js -o build/build.js",
-        "start": "node ./bin/www",
+        "start": "npm run dist && node ./bin/www",
         "redev": "DEV=1 node ./bin/www",
         "redev-nodemon": "DEV=1 nodemon ./bin/www --watch views --watch routes --watch lib --watch app.js"
     },
