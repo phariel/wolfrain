@@ -93,6 +93,17 @@ require(['jquery', 'bootstrap'], function ($, bs) {
         voice.play();
     }
 
+    function initVoices() {
+        if (!audios) {
+            audios = {};
+            Object.keys(audioList).forEach(function (key) {
+                audios[key] = new Audio();
+                audios[key].preload = 'auto';
+                audios[key].src = audioList[key];
+            });
+        }
+    }
+
     function initSeat() {
         var roomNumber = getStorage('room');
         var admin = getStorage('admin');
@@ -113,12 +124,7 @@ require(['jquery', 'bootstrap'], function ($, bs) {
             btnSkill.removeClass('none');
 
             if (admin === roomNumber) {
-                if (!audios) {
-                    audios = {};
-                    Object.keys(audioList).forEach(function (key) {
-                        audios[key] = new Audio(audioList[key]);
-                    });
-                }
+                initVoices();
                 btnStart.addClass('none');
                 clearInterval(getAdminVoicesInterval);
                 getAdminVoicesInterval = setInterval(function () {
@@ -157,12 +163,7 @@ require(['jquery', 'bootstrap'], function ($, bs) {
 
         } else {
             if (admin === roomNumber) {
-                if (!audios) {
-                    audios = {};
-                    Object.keys(audioList).forEach(function (key) {
-                        audios[key] = new Audio(audioList[key]);
-                    });
-                }
+                initVoices();
                 btnStart.removeClass('none');
             }
 
