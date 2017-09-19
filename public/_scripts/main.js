@@ -284,10 +284,11 @@ require(['jquery', 'bootstrap'], function ($, bs) {
         var el = $(this);
         elSit.removeClass('none');
 
-        if (el.hasClass('btn-success')) {
+        if (el.hasClass('btn-success')||el.hasClass('btn-info')) {
             seat = 0;
         } else {
             seat = el.data('seat');
+            el.addClass('btn-selected').siblings().removeClass('btn-selected');
         }
     });
 
@@ -313,6 +314,7 @@ require(['jquery', 'bootstrap'], function ($, bs) {
                     seatNumber: seat
                 },
                 success: function (data) {
+                    elSeats.find('.btn-seat').removeClass('btn-selected');
                     if (data.success) {
                         elSit.addClass('none');
                         stateCache[room].seat = seat;
