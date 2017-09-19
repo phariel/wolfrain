@@ -26,6 +26,21 @@ require(['jquery', 'bootstrap'], function ($, bs) {
     var btnJudge = $('.btn-judge');
     var elSkill = $('.skill-area');
 
+    var audios = {
+        'enter-night': '/_audios/enter-night.m4a',
+        'enter-day': '/_audios/enter-day.m4a',
+        'wolf-start': '/_audios/wolf-start.m4a',
+        'wolf-end': '/_audios/wolf-end.m4a',
+        'witch-start': '/_audios/witch-start.m4a',
+        'witch-end': '/_audios/witch-end.m4a',
+        'seer-start': '/_audios/seer-start.m4a',
+        'seer-end': '/_audios/seer-end.m4a',
+        'guard-start': '/_audios/guard-start.m4a',
+        'guard-end': '/_audios/guard-end.m4a',
+        'hunter-start': '/_audios/hunter-start.m4a',
+        'hunter-end': '/_audios/hunter-end.m4a'
+    };
+
     var tagRed = '<span class="text-red">{0}</span>';
     var tagGreen = '<span class="text-green">{0}</span>';
     var tagBlue = '<span class="text-blue">{0}</span>';
@@ -53,6 +68,9 @@ require(['jquery', 'bootstrap'], function ($, bs) {
     var getAdminNightEndInterval;
     var roomStarted;
 
+    $('.loading').addClass('none');
+    elRoom.removeClass('none');
+
     function setStorage(key, value) {
         localStorage.setItem(key, value);
     }
@@ -62,15 +80,15 @@ require(['jquery', 'bootstrap'], function ($, bs) {
     }
 
     function playVoices(name, nextName) {
-        var voice = $('#audio-' + name);
+        var voice = new Audio(audios[name]);
         if (nextName) {
-            voice.one('ended', function () {
+            $(voice).one('ended', function () {
                 setTimeout(function () {
-                    $('#audio-' + nextName)[0].play();
+                    new Audio(audios[nextName]).play();
                 }, 2000);
             })
         }
-        voice[0].play();
+        voice.play();
     }
 
     function initSeat() {
@@ -246,13 +264,13 @@ require(['jquery', 'bootstrap'], function ($, bs) {
 
     elSeats.on('click', '.btn-seat', function () {
         var state = getStorage('state');
-        if (state) {
-            state = JSON.parse(state);
-        }
         var room = getStorage('room');
         if (state) {
+            state = JSON.parse(state);
             if (state[room]) {
                 seat = state[room].seat;
+            } else {
+                seat = 0;
             }
         } else {
             seat = 0;
@@ -266,10 +284,11 @@ require(['jquery', 'bootstrap'], function ($, bs) {
         var el = $(this);
         elSit.removeClass('none');
 
-        if (el.hasClass('btn-success')) {
+        if (el.hasClass('btn-success')||el.hasClass('btn-info')) {
             seat = 0;
         } else {
             seat = el.data('seat');
+            el.addClass('btn-selected').siblings().removeClass('btn-selected');
         }
     });
 
@@ -295,6 +314,7 @@ require(['jquery', 'bootstrap'], function ($, bs) {
                     seatNumber: seat
                 },
                 success: function (data) {
+                    elSeats.find('.btn-seat').removeClass('btn-selected');
                     if (data.success) {
                         elSit.addClass('none');
                         stateCache[room].seat = seat;

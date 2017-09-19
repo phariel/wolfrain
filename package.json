@@ -1,19 +1,26 @@
 {
-  "name": "wolfrain",
-  "version": "0.2.0",
-  "private": true,
-  "scripts": {
-    "start": "node ./bin/www"
-  },
-  "dependencies": {
-    "body-parser": "~1.17.1",
-    "cookie-parser": "~1.4.3",
-    "debug": "~2.6.3",
-    "ejs": "~2.5.6",
-    "express": "~4.15.2",
-    "less-middleware": "~2.2.0",
-    "morgan": "~1.8.1",
-    "node-cache": "^4.1.1",
-    "serve-favicon": "~2.4.2"
-  }
+    "name": "wolfrain",
+    "version": "0.2.0",
+    "private": true,
+    "scripts": {
+        "postinstall": "node build/r.js -o build/build.js",
+        "dist": "node build/r.js -o build/build.js",
+        "start": "node ./bin/www",
+        "redev": "DEV=1 node ./bin/www",
+        "redev-nodemon": "DEV=1 nodemon ./bin/www --watch views --watch routes --watch lib --watch app.js"
+    },
+    "engines": {
+        "node": "6.11.1"
+    },
+    "dependencies": {
+        "body-parser": "~1.17.1",
+        "cookie-parser": "~1.4.3",
+        "debug": "~2.6.3",
+        "ejs": "~2.5.6",
+        "express": "~4.15.2",
+        "less-middleware": "~2.2.0",
+        "morgan": "~1.8.1",
+        "node-cache": "^4.1.1",
+        "serve-favicon": "~2.4.2"
+    }
 }

@@ -1,0 +1,5 @@
+---
+applications:
+- name: wolfrain
+  host: wolfrain
+  memory: 2048M
