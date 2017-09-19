@@ -26,7 +26,7 @@ require(['jquery', 'bootstrap'], function ($, bs) {
     var btnJudge = $('.btn-judge');
     var elSkill = $('.skill-area');
 
-    var audios = {
+    var audioList = {
         'enter-night': '/_audios/enter-night.mp3',
         'enter-day': '/_audios/enter-day.mp3',
         'wolf-start': '/_audios/wolf-start.mp3',
@@ -40,6 +40,8 @@ require(['jquery', 'bootstrap'], function ($, bs) {
         'hunter-start': '/_audios/hunter-start.mp3',
         'hunter-end': '/_audios/hunter-end.mp3'
     };
+
+    var audios;
 
     var tagRed = '<span class="text-red">{0}</span>';
     var tagGreen = '<span class="text-green">{0}</span>';
@@ -80,11 +82,11 @@ require(['jquery', 'bootstrap'], function ($, bs) {
     }
 
     function playVoices(name, nextName) {
-        var voice = new Audio(audios[name]);
+        var voice = audios[name];
         if (nextName) {
             $(voice).one('ended', function () {
                 setTimeout(function () {
-                    new Audio(audios[nextName]).play();
+                    audios[nextName].play();
                 }, 1000);
             })
         }
@@ -111,6 +113,12 @@ require(['jquery', 'bootstrap'], function ($, bs) {
             btnSkill.removeClass('none');
 
             if (admin === roomNumber) {
+                if (!audios) {
+                    audios = {};
+                    Object.keys(audioList).forEach(function (key) {
+                        audios[key] = new Audio(audioList[key]);
+                    });
+                }
                 btnStart.addClass('none');
                 clearInterval(getAdminVoicesInterval);
                 getAdminVoicesInterval = setInterval(function () {
@@ -149,6 +157,12 @@ require(['jquery', 'bootstrap'], function ($, bs) {
 
         } else {
             if (admin === roomNumber) {
+                if (!audios) {
+                    audios = {};
+                    Object.keys(audioList).forEach(function (key) {
+                        audios[key] = new Audio(audioList[key]);
+                    });
+                }
                 btnStart.removeClass('none');
             }
 
@@ -247,7 +261,7 @@ require(['jquery', 'bootstrap'], function ($, bs) {
         if (!createType) {
             elResultCreate.text('还未选择');
         } else {
-            btnCreate.attr('disabled','disabled');
+            btnCreate.attr('disabled', 'disabled');
             $.ajax({
                 url: '/createRoom',
                 method: 'POST',
@@ -287,7 +301,7 @@ require(['jquery', 'bootstrap'], function ($, bs) {
         var el = $(this);
         elSit.removeClass('none');
 
-        if (el.hasClass('btn-success')||el.hasClass('btn-info')) {
+        if (el.hasClass('btn-success') || el.hasClass('btn-info')) {
             seat = 0;
         } else {
             seat = el.data('seat');
@@ -309,7 +323,7 @@ require(['jquery', 'bootstrap'], function ($, bs) {
                 stateCache[room] = {};
             }
 
-            elSit.attr('disabled','disabled');
+            elSit.attr('disabled', 'disabled');
 
             $.ajax({
                 url: '/sitdown',
@@ -344,7 +358,7 @@ require(['jquery', 'bootstrap'], function ($, bs) {
 
     btnEnter.on('click', function () {
         var roomNumber = elInputEnter.val();
-        btnEnter.attr('disabled','disabled');
+        btnEnter.attr('disabled', 'disabled');
         $.ajax({
             url: '/roomTotal',
             method: 'POST',
@@ -373,7 +387,7 @@ require(['jquery', 'bootstrap'], function ($, bs) {
             state = JSON.parse(state);
             seat = state[room].seat;
         }
-        btnRole.attr('disabled','disabled');
+        btnRole.attr('disabled', 'disabled');
         $.ajax({
             url: '/getSelfRole',
             method: 'POST',
@@ -404,7 +418,7 @@ require(['jquery', 'bootstrap'], function ($, bs) {
         } else {
             state = {};
         }
-        btnStart.attr('disabled','disabled');
+        btnStart.attr('disabled', 'disabled');
 
         $.ajax({
             url: '/gameStart',
@@ -431,7 +445,7 @@ require(['jquery', 'bootstrap'], function ($, bs) {
     });
     btnLastNight.on('click', function () {
         var room = getStorage('room');
-        btnLastNight.attr('disabled','disabled');
+        btnLastNight.attr('disabled', 'disabled');
         $.ajax({
             url: '/getNightDead',
             method: 'POST',
@@ -450,7 +464,7 @@ require(['jquery', 'bootstrap'], function ($, bs) {
     });
     btnJudge.on('click', function () {
         var room = getStorage('room');
-        btnJudge.attr('disabled','disabled');
+        btnJudge.attr('disabled', 'disabled');
         $.ajax({
             url: '/getJudge',
             method: 'POST',
@@ -503,7 +517,7 @@ require(['jquery', 'bootstrap'], function ($, bs) {
         }
 
         if (room && seat) {
-            btnSkill.attr('disabled','disabled');
+            btnSkill.attr('disabled', 'disabled');
             $.ajax({
                 url: '/getSkillList',
                 method: 'POST',
@@ -606,7 +620,7 @@ require(['jquery', 'bootstrap'], function ($, bs) {
                                 seatNumbers.push(elHeal.attr('disabled') === 'disabled' ? 0 : parseInt(elHeal.val(), 10));
                                 seatNumbers.push(elPoison.attr('disabled') === 'disabled' ? 0 : parseInt(elPoison.val(), 10));
 
-                                el.attr('disabled','disabled');
+                                el.attr('disabled', 'disabled');
 
                                 $.ajax({
                                     url: '/castSkill',
@@ -665,8 +679,8 @@ require(['jquery', 'bootstrap'], function ($, bs) {
                                 elSkill.html('');
                             });
                             elTemp.find('.skill-okay').on('click', function () {
-                                var el=$(this);
-                                el.attr('disabled','disabled');
+                                var el = $(this);
+                                el.attr('disabled', 'disabled');
                                 $.ajax({
                                     url: '/castSkill',
                                     method: 'POST',
